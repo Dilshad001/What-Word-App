@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>What word?</title>
+  </head>
+
+  <body>
+    <h1 class="main-header">What Word Application</h1>
+
+    {% extends 'base.html' %} {% block body %}
+
+    <div class="master_area">
+      <form id="dataForm">
+        <ul id="mainList">
+          <div class="headings">
+            <h3 class="heading_item1">Given Data</h3>
+            <h4 class="heading_item">Food</h4>
+            <h4 class="heading_item">Non-Food</h4>
+            <h4 class="heading_item">Utensils</h4>
+            <!-- <h4 class="heading_item">New Category</h4> -->
+          </div>
+
+          {% for item in data %}
+          <li class="list_with_checkbox">
+            <!-- For displaying the list of data -->
+            <span class="item_mastersheet">{{ item['Master Sheet'] }}</span>
+
+            <!-- for creating checkboxes along all the categories for displayed data -->
+            <div class="checkbox-group">
+              <input
+                type="checkbox"
+                class="dataCheckbox"
+                name="dataItem"
+                value="{{ item['Master Sheet'] }}"
+              />
+              <input
+                type="checkbox"
+                class="dataCheckbox1"
+                name="dataItem"
+                value="{{ item['Master Sheet'] }}"
+              />
+              <input
+                type="checkbox"
+                class="dataCheckbox2"
+                name="dataItem2"
+                value="{{ item['Master Sheet'] }}"
+              />
+
+              <!-- Edit this to add new cateogry -->
+              <!-- <input
+              type="checkbox"
+              class="dataCheckbox3"
+              name="dataItem3"
+              value="{{ item['Master Sheet'] }}"
+            /> -->
+            
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+
+        <div class="generate_csv_button_container">
+          <button id="generate_csv_button" name="data" type="button">
+            Generate CSV files
+          </button>
+        </div>
+      </form>
+    </div>
+
+
+    <!-- to display the selected checkboxes in the UI -->
+    <div class="cateogry_container">
+      <div class="to_set_width">
+        <div class="category_list">
+          <div>
+            <h2>Food Items</h2>
+            <ul id="selectedList"></ul>
+          </div>
+
+          <div>
+            <h2>Non-Food Items</h2>
+            <ul id="selectedList1"></ul>
+          </div>
+
+          <div>
+            <h2>Utensils</h2>
+            <ul id="selectedList2"></ul>
+          </div>
+
+          <!-- Edit to add new category -->
+          <!-- <div>
+            <h2>New Cateogry</h2>
+            <ul id="selectedList3"></ul>
+          </div> -->
+        </div>
+      </div>
+    </div>
+
+
+    <script>
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var checkboxes = document.querySelectorAll(".dataCheckbox");
+
+        var checkboxes1 = document.querySelectorAll(".dataCheckbox1");
+
+        var checkboxes2 = document.querySelectorAll(".dataCheckbox2");
+
+        //Edit this to add new category
+        // var checkboxes2 = document.querySelectorAll(".dataCheckbox3");
+
+        var selectedList = document.getElementById("selectedList");
+
+        var selectedList1 = document.getElementById("selectedList1");
+
+        var selectedList2 = document.getElementById("selectedList2");
+
+        //Edit this to add new category
+        // var selectedList2 = document.getElementById("selectedList3");
+
+        //handling button click to generate csv file
+        document
+          .getElementById("generate_csv_button")
+          .addEventListener("click", generate_csv);
+
+        function generate_csv() {
+          saveSelectedItems();
+          saveSelectedItems1();
+          saveSelectedItems2();
+          //saveSelectedItems3();
+          console.log("csv file generated")
+        }
+
+        checkboxes.forEach(function (checkbox) {
+          checkbox.addEventListener("change", function () {
+            updateSelectedList();
+          });
+        });
+
+        checkboxes1.forEach(function (checkbox) {
+          checkbox.addEventListener("change", function () {
+            updateSelectedList1();
+          });
+        });
+
+        checkboxes2.forEach(function (checkbox) {
+          checkbox.addEventListener("change", function () {
+            updateSelectedList2();
+          });
+        });
+
+        function updateSelectedList() {
+          selectedList.innerHTML = ""; // Clear the selected list
+
+          checkboxes.forEach(function (checkbox) {
+            if (checkbox.checked) {
+              var listItem = document.createElement("li");
+              listItem.textContent = checkbox.value;
+              selectedList.appendChild(listItem);
+            }
+          });
+
+          // Save selected items to a new CSV file
+          //generate_csv();
+        }
+
+        function updateSelectedList1() {
+          selectedList1.innerHTML = ""; // Clear the selected list
+
+          checkboxes1.forEach(function (checkbox) {
+            if (checkbox.checked) {
+              var listItem = document.createElement("li");
+              listItem.textContent = checkbox.value;
+              selectedList1.appendChild(listItem);
+            }
+          });
+
+          // Save selected items to a new CSV file
+          saveSelectedItems1();
+        }
+
+        function updateSelectedList2() {
+          selectedList2.innerHTML = ""; // Clear the selected list
+
+          checkboxes2.forEach(function (checkbox) {
+            if (checkbox.checked) {
+              var listItem = document.createElement("li");
+              listItem.textContent = checkbox.value;
+              selectedList2.appendChild(listItem);
+            }
+          });
+
+          // Save selected items to a new CSV file
+          saveSelectedItems2();
+        }
+
+        //Edit this to add new category
+        // function updateSelectedList3() {
+        //   selectedList3.innerHTML = ""; // Clear the selected list
+
+        //   checkboxes3.forEach(function (checkbox) {
+        //     if (checkbox.checked) {
+        //       var listItem = document.createElement("li");
+        //       listItem.textContent = checkbox.value;
+        //       selectedList3.appendChild(listItem);
+        //     }
+        //   });
+
+        //   // Save selected items to a new CSV file
+        //   saveSelectedItems3();
+        // }
+
+        function saveSelectedItems() {
+          var selectedItems = Array.from(checkboxes)
+            .filter(function (checkbox) {
+              return checkbox.checked;
+            })
+            .map(function (checkbox) {
+              return checkbox.value;
+            });
+
+          // Send selected items to the server to save them in a new CSV file
+          fetch("/save_selected_items", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ selectedItems: selectedItems }),
+          })
+            .then((response) => response.json())
+            .then((data) => console.log(data))
+            .catch((error) => console.error("Error:", error));
+        }
+
+        function saveSelectedItems1() {
+          var selectedItems1 = Array.from(checkboxes1)
+            .filter(function (checkbox) {
+              return checkbox.checked;
+            })
+            .map(function (checkbox) {
+              return checkbox.value;
+            });
+
+          // Send selected items to the server to save them in a new CSV file
+          fetch("/save_selected_items1", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ selectedItems1: selectedItems1 }),
+          })
+            .then((response) => response.json())
+            .then((data) => console.log(data))
+            .catch((error) => console.error("Error:", error));
+        }
+
+        function saveSelectedItems2() {
+          var selectedItems2 = Array.from(checkboxes2)
+            .filter(function (checkbox) {
+              return checkbox.checked;
+            })
+            .map(function (checkbox) {
+              return checkbox.value;
+            });
+
+          // Send selected items to the server to save them in a new CSV file
+          fetch("/save_selected_items2", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ selectedItems2: selectedItems2 }),
+          })
+            .then((response) => response.json())
+            .then((data) => console.log(data))
+            .catch((error) => console.error("Error:", error));
+        }
+
+        //Edit this to add new category
+        // function saveSelectedItems3() {
+        //   var selectedItems3 = Array.from(checkboxes3)
+        //     .filter(function (checkbox) {
+        //       return checkbox.checked;
+        //     })
+        //     .map(function (checkbox) {
+        //       return checkbox.value;
+        //     });
+
+        //   // Send selected items to the server to save them in a new CSV file
+        //   fetch("/save_selected_items3", {
+        //     method: "POST",
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify({ selectedItems3: selectedItems3 }),
+        //   })
+        //     .then((response) => response.json())
+        //     .then((data) => console.log(data))
+        //     .catch((error) => console.error("Error:", error));
+        // }
+      });
+    </script>
+
+    {% endblock %}
+  </body>
+</html>
