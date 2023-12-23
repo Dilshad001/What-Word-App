@@ -22,7 +22,7 @@ def save_selected_items1():
     selected_items = request.json['selectedItems1']
     save_to_csv('non-food.csv', selected_items)
     return jsonify({'message': 'Selected items 1 saved successfully'})
-
+    
 # creating selected utensils into a csv file
 @app.route('/save_selected_items2', methods=['POST'])
 def save_selected_items2():
